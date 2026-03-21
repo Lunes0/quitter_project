@@ -25,8 +25,9 @@ jobs:
           pip install -r backend/requirements.txt
 
       - name: Run tests
+        working-directory: ./backend
         env:
-          working-directory: ./backend
+          DJANGO_SETTINGS_MODULE: "backend.settings"
           SECRET_KEY: "test_key"
           DEBUG: 1
           DJANGO_ALLOWED_HOSTS: "localhost 127.0.0.1"
