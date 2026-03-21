@@ -2,7 +2,14 @@ import pytest
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework import status
-from .factories import UserFactory, PostFactory, CommentFactory, LikeFactory
+from .models import Profile
+from .factories import (
+    ProfileFactory,
+    UserFactory,
+    PostFactory,
+    CommentFactory,
+    LikeFactory,
+)
 
 
 @pytest.mark.django_db
@@ -37,18 +44,18 @@ class TestSocialInteractions:
         assert post_data["comments_count"] == 3
 
     def test_update_profile_partial(self, api_client):
-        user = UserFactory()
-        api_client.force_authenticate(user=user)
+        profile = ProfileFactory(display_name="Old name", bio="Old bio")
+        api_client.force_authenticate(user=profile.user)
 
         url = reverse("profile-update")
-        payload = {"display_name": "Novo Nome", "bio": "Minha nova bio"}
+        payload = {"display_name": "New name", "bio": "New bio"}
 
         response = api_client.patch(url, payload)
 
         assert response.status_code == status.HTTP_200_OK
-        user.profile.refresh_from_db()
-        assert user.profile.display_name == "Novo Nome"
-        assert user.profile.bio == "Minha nova bio"
+        profile.refresh_from_db()
+        assert profile.display_name == "New name"
+        assert profile.bio == "New bio"
 
     def test_delete_own_post(self, api_client):
         me = UserFactory()
@@ -86,17 +93,23 @@ class TestSocialInteractions:
         assert response.status_code == status.HTTP_200_OK
 
     def test_get_followers_and_following_count(self, api_client):
-        me = UserFactory()
-        other = UserFactory()
+        me_profile = ProfileFactory()
+        other_profile = ProfileFactory()
 
-        me.profile.following.add(other.profile)
+        Profile.objects.filter(id=me_profile.id).update(display_name="User1")
+        Profile.objects.filter(id=other_profile.id).update(display_name="User2")
 
-        api_client.force_authenticate(user=me)
+        me_profile.refresh_from_db()
+        other_profile.refresh_from_db()
+        me_profile.following.add(other_profile)
+
+        api_client.force_authenticate(user=me_profile.user)
         url = reverse("profile-update")
         response = api_client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
         assert response.data["following_count"] == 1
+        assert response.data["display_name"] == "User1"
 
     def test_cannot_follow_self(self, api_client):
         me = UserFactory()
@@ -112,7 +125,7 @@ class TestSocialInteractions:
         api_client.force_authenticate(user=user)
 
         url = reverse("comment-list-create", kwargs={"post_pk": post.id})
-        payload = {"content": "Este é um comentário de teste!"}
+        payload = {"content": "Comment test"}
 
         response = api_client.post(url, payload)
         assert response.status_code == status.HTTP_201_CREATED
@@ -120,4 +133,4 @@ class TestSocialInteractions:
 
         response = api_client.get(url)
         assert len(response.data) == 1
-        assert response.data[0]["content"] == "Este é um comentário de teste!"
+        assert response.data[0]["content"] == "Comment test"

@@ -19,6 +19,16 @@ class UserFactory(factory.django.DjangoModelFactory):
             self.save()
 
 
+class ProfileFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Profile
+        django_get_or_create = ("user",)
+
+    user = factory.SubFactory(UserFactory)
+    display_name = factory.Faker("name")
+    bio = factory.Faker("sentence")
+
+
 class PostFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Post
