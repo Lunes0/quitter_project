@@ -1,6 +1,25 @@
-import { useSettings } from "./hooks/useSettings";
 import { useTranslation } from "react-i18next";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Profile from "./pages/Profile";
+import NotFound from "./pages/NotFound";
+import ProtectedRoute from "./components/ProtectedRoute";
+
+import { useSettings } from "./hooks/useSettings";
 import "./index.css";
+
+function Logout() {
+  localStorage.clear();
+  return <Navigate to="/login" />;
+}
+
+function RegisterAndLogout() {
+  localStorage.clear();
+  return <Register />;
+}
 
 function App() {
   const { toggleTheme, changeLanguage } = useSettings();
@@ -31,6 +50,23 @@ function App() {
           </button>
         </div>
       </div>
+      <BrowserRouter>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Home />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<RegisterAndLogout />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/logout" element={<Logout />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
     </div>
   );
 }

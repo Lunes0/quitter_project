@@ -2,7 +2,6 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path("api/user/register/", views.CreateUser.as_view(), name="register"),
     path("posts/", views.PostListCreate.as_view(), name="post-list"),
     path("posts/feed/", views.PostFeedList.as_view(), name="post-feed"),
     path("posts/<int:pk>/", views.PostDetailUpdateDelete.as_view(), name="post-detail"),
