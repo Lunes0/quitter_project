@@ -1,17 +1,10 @@
-export interface UserProfile {
-  avatar: string | null;
-  display_name: string;
-  bio: string;
-  following_count: number;
-  followers_count: number;
-}
-
-export interface Post {
+export interface PostType {
   id: number;
   author_username: string;
+  author_avatar?: string;
   content: string;
-  image: string | null;
   created_at: string;
+  updated_at?: string;
   likes_count: number;
   comments_count: number;
   is_liked: boolean;
