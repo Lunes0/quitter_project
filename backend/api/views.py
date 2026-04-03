@@ -1,12 +1,13 @@
 from django.shortcuts import get_object_or_404, render
 from django.db.models import Q
 from django.contrib.auth.models import User
-from rest_framework import generics, status
+from rest_framework import generics, status, permissions, filters
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .models import Post, Profile, Like, Comment
 from .serializers import (
+    UserProfileSerializer,
     UserSerializer,
     PostSerializer,
     ProfileSerializer,
@@ -102,6 +103,32 @@ class LikeToggleView(APIView):
         )
 
 
+class CommentLikeToggleView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        comment_obj = get_object_or_404(Comment, id=pk)
+        user = request.user
+
+        like_qs = Like.objects.filter(comment=comment_obj, user=user)
+
+        if like_qs.exists():
+            like_qs.delete()
+            return Response(
+                {
+                    "message": "Comment unliked",
+                    "likes_count": comment_obj.likes.count(),
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        Like.objects.create(comment=comment_obj, user=user)
+        return Response(
+            {"message": "Comment liked", "likes_count": comment_obj.likes.count()},
+            status=status.HTTP_201_CREATED,
+        )
+
+
 class CommentListCreate(generics.ListCreateAPIView):
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticated]
@@ -115,9 +142,23 @@ class CommentListCreate(generics.ListCreateAPIView):
         serializer.save(author=self.request.user, post=post_obj)
 
 
-class CommentDelete(generics.DestroyAPIView):
+class CommentDetailUpdateDelete(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return Comment.objects.filter(author=self.request.user)
+
+
+class UserProfileDetail(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserProfileSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    lookup_field = "username"
+
+
+class UserSearchList(generics.ListAPIView):
+    serializer_class = UserProfileSerializer
+    queryset = User.objects.all()
+    filter_backends = [filters.SearchFilter]
+    search_fields = ["username", "profile__display_name"]

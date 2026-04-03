@@ -10,13 +10,19 @@ class UserFactory(factory.django.DjangoModelFactory):
         skip_postgeneration_save = True
 
     username = factory.Sequence(lambda n: f"user_{n}")
-    email = factory.LazyAttribute(lambda obj: f"{obj.username}@example.com")
 
     @factory.post_generation
     def password(self, create, extracted, **kwargs):
         if create:
             self.set_password("password123")
             self.save()
+
+    @factory.post_generation
+    def profile(self, create, extracted, **kwargs):
+        if not create:
+            return
+        if not hasattr(self, "profile"):
+            Profile.objects.create(user=self)
 
 
 class ProfileFactory(factory.django.DjangoModelFactory):
