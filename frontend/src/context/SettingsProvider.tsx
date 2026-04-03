@@ -9,6 +9,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({
     (localStorage.getItem("theme") as Theme) || "light",
   );
   const { i18n } = useTranslation();
+  const [language, setLanguage] = useState<string>(i18n.language || "pt");
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -24,16 +25,26 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({
     localStorage.setItem("theme", theme);
   }, [theme]);
 
+  useEffect(() => {
+    const onChange = (lng: string) => setLanguage(lng);
+    i18n.on("languageChanged", onChange);
+
+    return () => {
+      i18n.off("languageChanged", onChange);
+    };
+  }, [i18n]);
+
   const toggleTheme = () =>
     setTheme((prev) => (prev === "light" ? "dark" : "light"));
 
   const changeLanguage = (lng: string) => {
     i18n.changeLanguage(lng);
+    setLanguage(lng);
   };
 
   return (
     <SettingsContext.Provider
-      value={{ theme, toggleTheme, language: i18n.language, changeLanguage }}
+      value={{ theme, toggleTheme, language, changeLanguage }}
     >
       <div className="min-h-screen transition-colors duration-500 ease-in-out bg-white dark:bg-slate-950">
         {children}

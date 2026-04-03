@@ -5,6 +5,11 @@ export const getPosts = async () => {
   return res.data;
 };
 
+export const getFeedPosts = async () => {
+  const res = await api.get("/api/posts/feed/");
+  return res.data;
+};
+
 export const deletePost = async (id: number) => {
   return await api.delete(`/api/posts/${id}/`);
 };

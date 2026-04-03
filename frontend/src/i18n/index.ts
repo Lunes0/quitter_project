@@ -9,6 +9,20 @@ i18n
     resources: {
       en: {
         translation: {
+          comments: {
+            no_comments: "No comments yet. Be the first to comment!",
+            comments: "Comments",
+            placeholder: "Write a comment...",
+            post_button: "Comment",
+          },
+          home: {
+            profile: "Profile",
+            post_placeholder: "What's on your mind?",
+            create_post: "Post",
+            loading_posts: "Loading posts...",
+            posting: "Posting...",
+            feed: "Feed",
+          },
           auth: {
             username: "Username",
             password: "Password",
@@ -16,13 +30,22 @@ i18n
             register: "Register",
             logout: "Logout",
           },
-          welcome: "Welcome to Quitter",
-          login: "Login",
-          toggle_theme: "Toggle Theme",
           common: {
+            search: "Search on Quitter...",
+            toggle_theme: "Switch Theme",
+            delete: "Delete",
+            edit: "Edit",
+            edited: "Edited",
             save: "Save",
+            saving: "Saving...",
             cancel: "Cancel",
             loading: "Loading...",
+          },
+          follow: {
+            follow: "Follow",
+            following: "Following",
+            followers: "Followers",
+            unfollow: "Unfollow",
           },
           not_found: {
             title: "404 - Not Found",
@@ -32,6 +55,21 @@ i18n
       },
       pt: {
         translation: {
+          comments: {
+            no_comments:
+              "Ainda não há comentários. Seja o primeiro a comentar!",
+            comments: "Comentários",
+            placeholder: "Escreva um comentário...",
+            post_button: "Comentar",
+          },
+          home: {
+            profile: "Perfil",
+            post_placeholder: "O que você está pensando?",
+            create_post: "Postar",
+            loading_posts: "Carregando posts...",
+            posting: "Publicando...",
+            feed: "Feed",
+          },
           auth: {
             username: "Nome de usuário",
             password: "Senha",
@@ -39,12 +77,22 @@ i18n
             register: "Registrar",
             logout: "Sair",
           },
-          welcome: "Bem-vindo ao Quitter",
-          toggle_theme: "Alternar Tema",
           common: {
+            search: "Buscar no Quitter...",
+            toggle_theme: "Alternar Tema",
+            delete: "Deletar",
+            edit: "Editar",
+            edited: "Editado",
             save: "Salvar",
+            saving: "Salvando...",
             cancel: "Cancelar",
             loading: "Carregando...",
+          },
+          follow: {
+            follow: "Seguir",
+            following: "Seguindo",
+            followers: "Seguidores",
+            unfollow: "Deixar de seguir",
           },
           not_found: {
             title: "404 - Não Encontrado",

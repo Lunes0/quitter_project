@@ -1,13 +1,14 @@
 import React, { useEffect, type JSX } from "react";
 import { Navigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
+import { useTranslation } from "react-i18next";
 
 import { REFRESH_TOKEN, ACCESS_TOKEN } from "../api/constants";
 import api from "../api/api";
-import i18n from "../i18n";
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
   const [isAuthorized, setIsAuthorized] = React.useState<boolean | null>(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     auth().catch(() => setIsAuthorized(false));
@@ -37,11 +38,11 @@ function ProtectedRoute({ children }: { children: JSX.Element }) {
       setIsAuthorized(false);
       return;
     }
-    const decoded = jwtDecode(token);
+    const decoded = jwtDecode<{ exp?: number }>(token);
     const tokenExpiration = decoded.exp;
     const now = Date.now() / 1000;
 
-    if (tokenExpiration < now) {
+    if (!tokenExpiration || tokenExpiration < now) {
       await refreshToken();
     } else {
       setIsAuthorized(true);
@@ -52,7 +53,7 @@ function ProtectedRoute({ children }: { children: JSX.Element }) {
     return (
       <div className="flex items-center justify-center h-screen bg-slate-50 dark:bg-slate-950">
         <div className="text-indigo-600 font-bold animate-pulse">
-          {i18n.t("common.loading")}
+          {t("common.loading")}
         </div>
       </div>
     );

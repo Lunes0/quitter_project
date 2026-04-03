@@ -1,5 +1,5 @@
-import { useTranslation } from "react-i18next";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, Outlet } from "react-router-dom";
+import { useState } from "react";
 
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -7,8 +7,10 @@ import Register from "./pages/Register";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Sidebar from "./components/layout/Sidebar";
+import Navbar from "./components/layout/Navbar";
+import MobileMenu from "./components/layout/MobileMenu";
 
-import { useSettings } from "./hooks/useSettings";
 import "./index.css";
 
 function Logout() {
@@ -21,52 +23,54 @@ function RegisterAndLogout() {
   return <Register />;
 }
 
-function App() {
-  const { toggleTheme, changeLanguage } = useSettings();
-  const { t } = useTranslation();
+function AppLayout() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center space-y-6 bg-slate-100 dark:bg-slate-900 transition-colors duration-300">
-      <div className="flex gap-4">
-        <button
-          onClick={toggleTheme}
-          className="px-6 py-3 bg-indigo-600 text-white font-bold rounded-lg shadow-lg hover:bg-indigo-700 transition-all active:scale-95"
-        >
-          {t("toggle_theme")}
-        </button>
-
-        <div className="flex border border-slate-300 dark:border-slate-700 rounded-lg overflow-hidden">
-          <button
-            onClick={() => changeLanguage("pt")}
-            className="px-4 py-2 hover:bg-slate-200 dark:hover:bg-slate-800 transition"
-          >
-            PT
-          </button>
-          <button
-            onClick={() => changeLanguage("en")}
-            className="px-4 py-2 hover:bg-slate-200 dark:hover:bg-slate-800 border-l border-slate-300 dark:border-slate-700 transition"
-          >
-            EN
-          </button>
-        </div>
+    <div className="flex flex-col min-h-screen md:max-w-5xl w-full m-auto">
+      <header className="sticky top-0 z-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur border-b border-slate-200 dark:border-slate-700">
+        <Navbar onMenuToggle={toggleMobileMenu} />
+      </header>
+      <div className="flex flex-1 min-h-[calc(100vh-56px)]">
+        <Sidebar />
+        <main className="flex-1 p-4 overflow-auto">
+          <Outlet />
+        </main>
       </div>
-      <BrowserRouter>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <Home />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<RegisterAndLogout />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/logout" element={<Logout />} />
+      <MobileMenu
+        isOpen={isMobileMenuOpen}
+        onClose={() => setIsMobileMenuOpen(false)}
+      />
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <div className="bg-slate-100 dark:bg-slate-900 transition-colors duration-300 min-h-screen">
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<RegisterAndLogout />} />
+        <Route path="/notfound" element={<NotFound />} />
+
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <AppLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Home />} />
+          <Route path="profile/:username" element={<Profile />} />
+          <Route path="logout" element={<Logout />} />
           <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+        </Route>
+
+        <Route path="*" element={<NotFound />} />
+      </Routes>
     </div>
   );
 }

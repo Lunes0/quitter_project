@@ -1,19 +1,23 @@
 import { useState, useEffect } from "react";
-import { createPost, deletePost, getPosts } from "../api/services/posts";
-import Post from "../components/posts/Post";
+import { useTranslation } from "react-i18next";
+import { createPost, deletePost, getFeedPosts } from "../api/services/posts";
+import Post from "../components/layout/Post";
 import type { PostType } from "../types";
+import Button from "../components/ui/buttons/Buttons";
+import Inputs from "../components/ui/Inputs";
 
 function Home() {
+  const { t } = useTranslation();
   const [posts, setPosts] = useState<PostType[]>([]);
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
 
   const loadPosts = async () => {
     try {
-      const data = await getPosts();
+      const data = await getFeedPosts();
       setPosts(data);
     } catch (err) {
-      console.error("Erro ao buscar posts", err);
+      console.error(err);
     }
   };
 
@@ -31,7 +35,7 @@ function Home() {
         loadPosts();
       }
     } catch (err) {
-      alert("Erro ao criar post: " + err);
+      alert(err);
     } finally {
       setLoading(false);
     }
@@ -44,33 +48,30 @@ function Home() {
         loadPosts();
       }
     } catch (err) {
-      alert("Erro ao deletar post: " + err);
+      alert(err);
     }
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-4">
+    <div className="">
       <div className="mb-8">
-        <h2 className="text-xl font-bold mb-4">Create Post</h2>
+        <h2 className="text-xl font-bold mb-4">{t("home.create_post")}</h2>
         <form onSubmit={handleCreatePost}>
-          <textarea
-            className="focus:ring-2 focus:ring-indigo-500 focus:outline-none rounded-md border border-gray-300 dark:bg-gray-700 dark:border-gray-600 px-3 py-2 w-full mb-4 dark:text-white"
+          <Inputs
             value={content}
+            placeholder={t("home.post_placeholder")}
             onChange={(e) => setContent(e.target.value)}
             required
+            textarea={true}
           />
-          <button
-            className="bg-indigo-500 hover:bg-indigo-600 text-white py-2 px-4 rounded-md w-full disabled:opacity-50"
-            type="submit"
-            disabled={loading}
-          >
-            {loading ? "Posting..." : "Create Post"}
-          </button>
+          <Button primary={true} size="lg" type="submit" disabled={loading}>
+            {loading ? t("home.posting") : t("home.create_post")}
+          </Button>
         </form>
       </div>
 
       <div>
-        <h2 className="text-xl font-bold mb-4">Posts</h2>
+        <h2 className="text-xl font-bold mb-4">{t("home.feed")}</h2>
         <div className="space-y-4">
           {posts.map((post) => (
             <Post

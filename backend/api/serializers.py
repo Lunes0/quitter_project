@@ -60,10 +60,32 @@ class PostSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     author_username = serializers.ReadOnlyField(source="author.username")
+    author_avatar = serializers.ReadOnlyField(source="author.profile.avatar.url")
+    author_display_name = serializers.ReadOnlyField(
+        source="author.profile.display_name"
+    )
+    is_liked = serializers.SerializerMethodField()
+    likes_count = serializers.ReadOnlyField(source="likes.count")
 
     class Meta:
         model = Comment
-        fields = ["id", "author_username", "content", "created_at"]
+        fields = [
+            "id",
+            "author_username",
+            "author_avatar",
+            "author_display_name",
+            "content",
+            "created_at",
+            "updated_at",
+            "likes_count",
+            "is_liked",
+        ]
+
+    def get_is_liked(self, obj):
+        user = self.context.get("request").user
+        if user.is_authenticated:
+            return obj.likes.filter(user=user).exists()
+        return False
 
 
 class LikeSerializer(serializers.ModelSerializer):
@@ -73,3 +95,72 @@ class LikeSerializer(serializers.ModelSerializer):
         model = Like
         fields = ["id", "user", "user_username", "post", "created_at"]
         read_only_fields = ["user"]
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    followers_count = serializers.SerializerMethodField()
+    following_count = serializers.SerializerMethodField()
+    followers = serializers.SerializerMethodField()
+    following = serializers.SerializerMethodField()
+    posts = PostSerializer(many=True, read_only=True)
+    is_following = serializers.SerializerMethodField()
+    display_name = serializers.SerializerMethodField()
+    bio = serializers.SerializerMethodField()
+    avatar = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "username",
+            "posts",
+            "followers_count",
+            "following_count",
+            "followers",
+            "following",
+            "is_following",
+            "display_name",
+            "bio",
+            "avatar",
+        ]
+
+    def get_followers_count(self, obj):
+        return obj.profile.followers.count()
+
+    def get_following_count(self, obj):
+        return obj.profile.following.count()
+
+    def get_is_following(self, obj):
+        user = self.context.get("request").user
+        if user.is_authenticated:
+            return user.profile.following.filter(user=obj).exists()
+        return False
+
+    def get_followers(self, obj):
+        return [
+            {
+                "username": profile.user.username,
+                "display_name": profile.display_name or profile.user.username,
+            }
+            for profile in obj.profile.followers.all()
+        ]
+
+    def get_following(self, obj):
+        return [
+            {
+                "username": profile.user.username,
+                "display_name": profile.display_name or profile.user.username,
+            }
+            for profile in obj.profile.following.all()
+        ]
+
+    def get_display_name(self, obj):
+        return obj.profile.display_name
+
+    def get_bio(self, obj):
+        return obj.profile.bio
+
+    def get_avatar(self, obj):
+        if obj.profile.avatar:
+            return obj.profile.avatar.url
+        return None
