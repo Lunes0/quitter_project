@@ -61,9 +61,32 @@ function Form({
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
-      <Buttons size="lg" disabled={loading} type="submit">
-        {loading ? t("common.loading") : name}
-      </Buttons>
+      <div className="flex justify-between mt-4">
+        <Buttons primary={true} size="lg" disabled={loading} type="submit">
+          {loading ? t("common.loading") : name}
+        </Buttons>
+        {method === "login" ? (
+          <Buttons
+            primary={false}
+            size="lg"
+            disabled={loading}
+            type="button"
+            onClick={() => navigate("/register")}
+          >
+            {t("auth.register")}
+          </Buttons>
+        ) : (
+          <Buttons
+            primary={false}
+            size="lg"
+            disabled={loading}
+            type="button"
+            onClick={() => navigate("/login")}
+          >
+            {t("auth.login")}
+          </Buttons>
+        )}
+      </div>
     </form>
   );
 }
