@@ -4,9 +4,7 @@ from django.contrib.auth.models import User
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
-    avatar = models.ImageField(
-        upload_to="avatars/%Y/%m/", default="default.png", blank=True
-    )
+    avatar = models.ImageField(upload_to="avatars/%Y/%m/", null=True, blank=True)
     display_name = models.CharField(max_length=100, blank=True)
     bio = models.TextField(max_length=160, blank=True)
     following = models.ManyToManyField(

@@ -1,26 +1,13 @@
-import React, { createContext, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../api/constants";
 import type { UserProfileType } from "../types";
+import { AuthContext } from "./AuthContextInstance";
 import {
   fetchCurrentProfile,
   getCurrentUsername,
   removeCurrentUsername,
 } from "../api/services/auth";
-
-export interface AuthContextType {
-  user: UserProfileType | null;
-  setUser: React.Dispatch<React.SetStateAction<UserProfileType | null>>;
-  isLoading: boolean;
-  isAuthenticated: boolean;
-  login: (username: string, access: string, refresh: string) => Promise<void>;
-  logout: () => void;
-  refreshProfile: () => Promise<void>;
-}
-
-export const AuthContext = createContext<AuthContextType | undefined>(
-  undefined,
-);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -33,15 +20,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     Boolean(localStorage.getItem(ACCESS_TOKEN)) &&
     Boolean(getCurrentUsername());
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem(ACCESS_TOKEN);
     localStorage.removeItem(REFRESH_TOKEN);
     removeCurrentUsername();
     setUser(null);
     navigate("/login");
-  };
+  }, [navigate]);
 
-  const refreshProfile = async () => {
+  const refreshProfile = useCallback(async () => {
     setIsLoading(true);
     try {
       const profile = await fetchCurrentProfile();
@@ -52,7 +39,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   const login = async (username: string, access: string, refresh: string) => {
     localStorage.setItem(ACCESS_TOKEN, access);
@@ -63,26 +50,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       const profile = await fetchCurrentProfile();
       setUser(profile);
     } catch (error) {
-      console.error("Login profile load failed", error);
+      console.error(error);
       setUser(null);
     }
   };
 
   useEffect(() => {
-    const loadUser = async () => {
-      setIsLoading(true);
-      try {
-        const profile = await fetchCurrentProfile();
-        setUser(profile);
-      } catch (error) {
-        console.error(error);
-        setUser(null);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    loadUser();
-  }, []);
+    refreshProfile();
+  }, [refreshProfile]);
 
   return (
     <AuthContext.Provider

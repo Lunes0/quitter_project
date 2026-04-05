@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import SearchBar from "../ui/SearchBar";
 import Buttons from "../ui/buttons/Buttons";
+import { useTranslation } from "react-i18next";
 
 interface NavbarProps {
   onMenuToggle?: () => void;
@@ -8,6 +9,7 @@ interface NavbarProps {
 
 function Navbar({ onMenuToggle }: NavbarProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
     <div className="flex gap-4 mt-4 mb-4 px-4 items-center justify-between">
@@ -37,7 +39,7 @@ function Navbar({ onMenuToggle }: NavbarProps) {
           size="lg"
           rounded={true}
         >
-          Home
+          {t("home.home")}
         </Buttons>
       </div>
       <SearchBar />

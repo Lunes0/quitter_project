@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { updatePost } from "../../api/services/posts";
+import { getAvatarUrl } from "../../api/services/profileImg";
 import type { PostType } from "../../types";
 import Comments from "./Comments";
 import LikeButton from "../ui/buttons/LikeButton";
-import { useTranslation } from "react-i18next";
 import IconButton from "../ui/buttons/IconButtons";
 import Inputs from "../ui/Inputs";
 import Buttons from "../ui/buttons/Buttons";
@@ -48,23 +49,19 @@ function Post({ post, onDelete, onUpdate }: PostProps) {
         className="flex w-fit items-center gap-3 mb-2 cursor-pointer"
         onClick={() => navigate(`/profile/${post.author_username}`)}
       >
-        {post.author_avatar ? (
-          <img
-            src={post.author_avatar}
-            alt={post.author_username}
-            className="w-10 h-10 rounded-full"
-          />
-        ) : (
-          <span className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center">
-            {"👤"}
+        <img
+          src={getAvatarUrl(post.author_avatar, post.author_username)}
+          alt={post.author_username}
+          className="w-14 h-14 rounded-full"
+        />
+        <div className="flex flex-col leading-tight">
+          <h3 className="text-md font-bold text-slate-900 dark:text-white">
+            {post.author_display_name || post.author_username}
+          </h3>
+          <span className="text-sm text-slate-500 dark:text-slate-400">
+            @{post.author_username}
           </span>
-        )}
-        <h3
-          onClick={() => navigate(`/profile/${post.author_username}`)}
-          className="font-bold text-slate-900 dark:text-white"
-        >
-          {post.author_username}
-        </h3>
+        </div>
       </div>
 
       {isEditing ? (
@@ -95,7 +92,7 @@ function Post({ post, onDelete, onUpdate }: PostProps) {
           </div>
         </div>
       ) : (
-        <p className="text-slate-700 dark:text-slate-300 my-2">
+        <p className="text-slate-700 dark:text-slate-300 my-2 wrap-break-word whitespace-pre-wrap">
           {post.content}
         </p>
       )}
@@ -122,15 +119,15 @@ function Post({ post, onDelete, onUpdate }: PostProps) {
       )}
 
       <div className="flex items-center justify-between mt-4 pt-3 border-t dark:border-slate-800 text-xs text-slate-500">
-        <div>
+        <p className="text-xs text-slate-500 dark:text-slate-400">
           <span>{formattedDate}</span>
-          {post.updated_at && post.updated_at !== post.created_at && (
-            <span className="italic ml-2 text-sm text-slate-500">
+          {post.is_edited && post.updated_at && (
+            <span className="italic ml-2">
               • {t("common.edited")} •{" "}
               {new Date(post.updated_at).toLocaleString()}
             </span>
           )}
-        </div>
+        </p>
 
         <div className="flex gap-3">
           {currentUsername === post.author_username && (

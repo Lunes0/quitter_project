@@ -18,7 +18,7 @@ function Inputs({
   onFocus?: () => void;
 }) {
   const baseClasses =
-    "focus:ring-2 focus:ring-indigo-500 focus:outline-none rounded-md border border-gray-300 dark:bg-gray-700 dark:border-gray-600 px-3 py-2 w-full mb-4 dark:text-white transition-all";
+    "focus:ring-2 focus:ring-indigo-500 focus:outline-none rounded-md border border-gray-300 dark:bg-gray-700 dark:border-gray-600 px-3 py-2 w-full mb-4 dark:text-white transition-all wrap-break-word whitespace-pre-wrap resize-none";
   return textarea ? (
     <textarea
       className={baseClasses}
