@@ -11,6 +11,10 @@ Projeto de estudo de rede social estilo Twitter (Quitter)
 - Autenticação: JWT (Django REST Framework Simple JWT)
 - Banco de dados: SQLite (setup local de desenvolvimento)
 
+## 💻 Deploy
+
+- [Vercel: Quitter](https://quitter-project.vercel.app/login)
+
 ## 🧩 Funcionalidades principais
 
 - Cadastro e login de usuários
