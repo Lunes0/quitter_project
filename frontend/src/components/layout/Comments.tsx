@@ -1,4 +1,6 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import LikeButton from "../ui/buttons/LikeButton";
 import type { CommentType } from "../../types";
 import {
@@ -7,7 +9,7 @@ import {
   updateComment,
   deleteComment,
 } from "../../api/services/comments";
-import { useTranslation } from "react-i18next";
+import { getAvatarUrl } from "../../api/services/profileImg";
 import IconButton from "../ui/buttons/IconButtons";
 import Buttons from "../ui/buttons/Buttons";
 import Inputs from "../ui/Inputs";
@@ -18,6 +20,7 @@ interface CommentsProps {
 }
 
 function Comments({ postId, onCommentAdded }: CommentsProps) {
+  const navigate = useNavigate();
   const [comments, setComments] = useState<CommentType[]>([]);
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
@@ -26,19 +29,19 @@ function Comments({ postId, onCommentAdded }: CommentsProps) {
   const [editingContent, setEditingContent] = useState("");
   const { t } = useTranslation();
 
-  const loadComments = async () => {
+  const loadComments = useCallback(async () => {
     try {
       const data = await getComments(postId);
       setComments(data);
     } catch (err) {
       console.error("Error fetching comments", err);
     }
-  };
+  }, [postId]);
 
   useEffect(() => {
     loadComments();
     setCurrentUsername(localStorage.getItem("current_username"));
-  }, [postId]);
+  }, [loadComments]);
 
   const handleDelete = async (commentId: number) => {
     try {
@@ -118,24 +121,43 @@ function Comments({ postId, onCommentAdded }: CommentsProps) {
             const isOwner = currentUsername === comment.author_username;
             const isEditing = editingCommentId === comment.id;
 
+            const authorUsername = comment.author_username;
+            const authorAvatar = comment.author_avatar;
+            const authorDisplayName = comment.author_display_name;
+
             return (
               <div
                 key={comment.id}
                 className="border border-gray-200 dark:border-slate-700 rounded-lg p-3"
               >
                 <div className="flex items-center justify-between mb-1">
-                  <div>
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                      {comment.author_username}
-                    </p>
+                  <div className="flex items-center">
+                    <div
+                      className="cursor-pointer flex items-center"
+                      onClick={() => navigate(`/profile/${authorUsername}`)}
+                    >
+                      <img
+                        src={getAvatarUrl(authorAvatar, authorUsername)}
+                        alt={authorUsername}
+                        className="w-12 h-12 rounded-full mr-2"
+                      />
+                      <div className="flex flex-col leading-tight mr-5">
+                        <p className="text-md font-semibold text-slate-900 dark:text-white">
+                          {authorDisplayName || authorUsername}
+                        </p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                          @{authorUsername}
+                        </p>
+                      </div>
+                    </div>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
                       {new Date(comment.created_at).toLocaleString()}
-                      {comment.updated_at &&
-                        comment.updated_at !== comment.created_at && (
-                          <span className="ml-2 italic">
-                            ({t("common.edited")})
-                          </span>
-                        )}
+                      {comment.is_edited && comment.updated_at && (
+                        <span className="ml-2 italic">
+                          • {t("common.edited")} •{" "}
+                          {new Date(comment.updated_at).toLocaleString()}
+                        </span>
+                      )}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -162,9 +184,8 @@ function Comments({ postId, onCommentAdded }: CommentsProps) {
 
                 {isEditing ? (
                   <div className="space-y-2">
-                    <textarea
-                      className="w-full rounded-md border border-gray-300 dark:border-slate-700 p-2 bg-white dark:bg-slate-800 text-sm dark:text-white"
-                      rows={3}
+                    <Inputs
+                      textarea={true}
                       value={editingContent}
                       onChange={(e) => setEditingContent(e.target.value)}
                     />
@@ -188,7 +209,7 @@ function Comments({ postId, onCommentAdded }: CommentsProps) {
                     </div>
                   </div>
                 ) : (
-                  <p className="text-sm text-slate-700 dark:text-slate-200">
+                  <p className="text-sm text-slate-700 dark:text-slate-200 wrap-break-word whitespace-pre-wrap">
                     {comment.content}
                   </p>
                 )}

@@ -1,9 +1,10 @@
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import LanguageButton from "../ui/buttons/LanguageButton";
 import ThemeButton from "../ui/buttons/ThemeButton";
 import { useAuth } from "../../hooks/useAuth";
-import { useTranslation } from "react-i18next";
 import Buttons from "../ui/buttons/Buttons";
+import { getAvatarUrl } from "../../api/services/profileImg";
 
 function Sidebar() {
   const navigate = useNavigate();
@@ -30,18 +31,12 @@ function Sidebar() {
         onClick={() => navigate(`/profile/${user.username}`)}
         className="flex items-center gap-3 mb-2 cursor-pointer"
       >
-        {user.avatar ? (
-          <img
-            src={user.avatar}
-            alt={user.username}
-            className="w-24 h-24 rounded-full"
-          />
-        ) : (
-          <span className="w-24 h-24 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
-            {"👤"}
-          </span>
-        )}
-        <h3 className="font-bold text-slate-900 dark:text-white">
+        <img
+          src={getAvatarUrl(user.avatar, user.username)}
+          alt={user.username}
+          className="w-24 h-24 rounded-full"
+        />
+        <h3 className="text-xl font-bold text-slate-900 dark:text-white">
           {user.display_name || user.username}
         </h3>
       </div>

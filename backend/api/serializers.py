@@ -6,6 +6,7 @@ from .models import Post, Profile, Comment, Like
 class ProfileSerializer(serializers.ModelSerializer):
     following_count = serializers.ReadOnlyField(source="following.count")
     followers_count = serializers.ReadOnlyField(source="followers.count")
+    avatar = serializers.ImageField(required=False, allow_null=True)
 
     class Meta:
         model = Profile
@@ -27,11 +28,12 @@ class UserSerializer(serializers.ModelSerializer):
 
 class PostSerializer(serializers.ModelSerializer):
     author_username = serializers.ReadOnlyField(source="author.username")
-    author_avatar = serializers.ReadOnlyField(source="author.profile.avatar.url")
+    author_avatar = serializers.SerializerMethodField()
     author_display_name = serializers.ReadOnlyField(
         source="author.profile.display_name"
     )
     is_liked = serializers.SerializerMethodField()
+    is_edited = serializers.SerializerMethodField()
     likes_count = serializers.ReadOnlyField(source="likes.count")
     comments_count = serializers.ReadOnlyField(source="comments.count")
 
@@ -48,8 +50,17 @@ class PostSerializer(serializers.ModelSerializer):
             "likes_count",
             "comments_count",
             "is_liked",
+            "is_edited",
         ]
         read_only_fields = ["created_at", "updated_at"]
+
+    def get_author_avatar(self, obj):
+        try:
+            if obj.author.profile.avatar:
+                return obj.author.profile.avatar.url
+        except ValueError:
+            return None
+        return None
 
     def get_is_liked(self, obj):
         user = self.context.get("request").user
@@ -57,14 +68,19 @@ class PostSerializer(serializers.ModelSerializer):
             return obj.likes.filter(user=user).exists()
         return False
 
+    def get_is_edited(self, obj):
+        diff = obj.updated_at - obj.created_at
+        return diff.total_seconds() > 1
+
 
 class CommentSerializer(serializers.ModelSerializer):
     author_username = serializers.ReadOnlyField(source="author.username")
-    author_avatar = serializers.ReadOnlyField(source="author.profile.avatar.url")
+    author_avatar = serializers.SerializerMethodField()
     author_display_name = serializers.ReadOnlyField(
         source="author.profile.display_name"
     )
     is_liked = serializers.SerializerMethodField()
+    is_edited = serializers.SerializerMethodField()
     likes_count = serializers.ReadOnlyField(source="likes.count")
 
     class Meta:
@@ -79,7 +95,20 @@ class CommentSerializer(serializers.ModelSerializer):
             "updated_at",
             "likes_count",
             "is_liked",
+            "is_edited",
         ]
+
+    def get_is_edited(self, obj):
+        diff = obj.updated_at - obj.created_at
+        return diff.total_seconds() > 1
+
+    def get_author_avatar(self, obj):
+        try:
+            if obj.author.profile.avatar:
+                return obj.author.profile.avatar.url
+        except ValueError:
+            return None
+        return None
 
     def get_is_liked(self, obj):
         user = self.context.get("request").user

@@ -1,4 +1,4 @@
-import React, { useEffect, type JSX } from "react";
+import React, { useEffect, useCallback, type JSX } from "react"; // Adicionado useCallback
 import { Navigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import { useTranslation } from "react-i18next";
@@ -10,15 +10,11 @@ function ProtectedRoute({ children }: { children: JSX.Element }) {
   const [isAuthorized, setIsAuthorized] = React.useState<boolean | null>(null);
   const { t } = useTranslation();
 
-  useEffect(() => {
-    auth().catch(() => setIsAuthorized(false));
-  }, []);
-
-  const refreshToken = async () => {
-    const refreshToken = localStorage.getItem(REFRESH_TOKEN);
+  const refreshToken = useCallback(async () => {
+    const refresh = localStorage.getItem(REFRESH_TOKEN);
     try {
       const res = await api.post("/api/token/refresh/", {
-        refresh: refreshToken,
+        refresh: refresh,
       });
       if (res.status === 200) {
         localStorage.setItem(ACCESS_TOKEN, res.data.access);
@@ -27,16 +23,15 @@ function ProtectedRoute({ children }: { children: JSX.Element }) {
         setIsAuthorized(false);
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
       setIsAuthorized(false);
     }
-  };
+  }, []);
 
-  const auth = async () => {
+  const auth = useCallback(async () => {
     const token = localStorage.getItem(ACCESS_TOKEN);
     if (!token) {
-      setIsAuthorized(false);
-      return;
+      return false;
     }
     const decoded = jwtDecode<{ exp?: number }>(token);
     const tokenExpiration = decoded.exp;
@@ -44,10 +39,33 @@ function ProtectedRoute({ children }: { children: JSX.Element }) {
 
     if (!tokenExpiration || tokenExpiration < now) {
       await refreshToken();
-    } else {
-      setIsAuthorized(true);
+      return;
     }
-  };
+    return true;
+  }, [refreshToken]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const checkAuth = async () => {
+      try {
+        const result = await auth();
+        if (isMounted) {
+          if (result === true) setIsAuthorized(true);
+          else if (result === false) setIsAuthorized(false);
+        }
+      } catch (error) {
+        console.error(error);
+        if (isMounted) setIsAuthorized(false);
+      }
+    };
+
+    checkAuth();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [auth]);
 
   if (isAuthorized === null) {
     return (

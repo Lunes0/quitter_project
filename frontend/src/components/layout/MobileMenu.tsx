@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import LanguageButton from "../ui/buttons/LanguageButton";
 import ThemeButton from "../ui/buttons/ThemeButton";
 import SearchBar from "../ui/SearchBar";
+import { getAvatarUrl } from "../../api/services/profileImg";
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -52,17 +53,11 @@ function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
             }}
             className="cursor-pointer flex items-center gap-3 mb-6"
           >
-            {user.avatar ? (
-              <img
-                src={user.avatar}
-                alt={user.username}
-                className="w-24 h-24 rounded-full"
-              />
-            ) : (
-              <span className="w-24 h-24 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xl">
-                {"👤"}
-              </span>
-            )}
+            <img
+              src={getAvatarUrl(user.avatar, user.username)}
+              alt={user.username}
+              className="w-24 h-24 rounded-full"
+            />
             <h3 className="font-bold text-slate-900 dark:text-white text-lg">
               {user.display_name || user.username}
             </h3>
