@@ -13,7 +13,7 @@ Projeto de estudo de rede social estilo Twitter (Quitter)
 
 ## 💻 Deploy
 
-- [Vercel: Quitter](https://quitter-project.vercel.app/login)
+- Atualmente fora do ar.
 
 ## 🧩 Funcionalidades principais
 
